@@ -1,0 +1,65 @@
+{
+  "title": "Subdomain Takeover & Cert Expiry Radar",
+  "type": "object",
+  "schemaVersion": 1,
+  "description": "Enter the root domains you own or are authorised to audit. Subdomains are discovered from public Certificate Transparency logs and each live host is checked.",
+  "properties": {
+    "domains": {
+      "title": "Root domains",
+      "type": "array",
+      "description": "Root domains to audit, e.g. example.com. Only audit domains you own or have permission to test.",
+      "editor": "stringList",
+      "prefill": ["mozilla.org"],
+      "default": ["mozilla.org"]
+    },
+    "maxHostsPerDomain": {
+      "title": "Max hosts per domain",
+      "type": "integer",
+      "description": "Upper bound on discovered subdomains audited per root domain. Also caps your spend.",
+      "minimum": 1,
+      "maximum": 2000,
+      "default": 40,
+      "prefill": 40
+    },
+    "expiryWarningDays": {
+      "title": "Certificate expiry warning (days)",
+      "type": "integer",
+      "description": "Hosts whose certificate expires within this many days are flagged as a risk finding.",
+      "minimum": 1,
+      "maximum": 365,
+      "default": 30,
+      "prefill": 30
+    },
+    "onlyRisks": {
+      "title": "Return only risky hosts",
+      "type": "boolean",
+      "description": "If enabled, healthy hosts are skipped and not charged. Ideal for scheduled monitoring.",
+      "default": false,
+      "editor": "checkbox"
+    },
+    "concurrency": {
+      "title": "Concurrency",
+      "type": "integer",
+      "description": "Number of hosts audited in parallel (1-30).",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "probeTimeoutSecs": {
+      "title": "TLS probe timeout (seconds)",
+      "type": "integer",
+      "description": "Connection timeout for TLS probes.",
+      "minimum": 2,
+      "maximum": 60,
+      "default": 8
+    },
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "description": "Optional proxy for HTTP and discovery requests. Direct TLS probes always originate from the Actor.",
+      "editor": "proxy",
+      "default": {}
+    }
+  },
+  "required": ["domains"]
+}

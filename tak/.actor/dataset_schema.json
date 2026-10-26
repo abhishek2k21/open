@@ -1,0 +1,29 @@
+{
+  "actorSpecification": 1,
+  "fields": {},
+  "views": {
+    "audit": {
+      "title": "Attack surface audit",
+      "transformation": {
+        "fields": ["host", "rootDomain", "severity", "findingTypes", "thirdPartyService", "cnameChain", "tlsValid", "certIssuer", "certExpiresAt", "certDaysLeft", "httpStatus", "checkedAt"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "host": {"label": "Host", "format": "text"},
+          "rootDomain": {"label": "Root domain", "format": "text"},
+          "severity": {"label": "Severity", "format": "text"},
+          "findingTypes": {"label": "Findings", "format": "array"},
+          "thirdPartyService": {"label": "Third-party service", "format": "text"},
+          "cnameChain": {"label": "CNAME chain", "format": "array"},
+          "tlsValid": {"label": "TLS valid", "format": "boolean"},
+          "certIssuer": {"label": "Cert issuer", "format": "text"},
+          "certExpiresAt": {"label": "Cert expires", "format": "date"},
+          "certDaysLeft": {"label": "Days left", "format": "number"},
+          "httpStatus": {"label": "HTTP status", "format": "number"},
+          "checkedAt": {"label": "Checked at", "format": "date"}
+        }
+      }
+    }
+  }
+}
