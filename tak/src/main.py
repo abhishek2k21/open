@@ -19,36 +19,31 @@ HOST_RE = re.compile(r'^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$')
 SEVERITY_RANK = {'info': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4}
 CHARGEABLE_SEVERITIES = {'medium', 'high', 'critical'}
 
-# (CNAME suffix, service, body fingerprint proving the resource is unclaimed)
-TAKEOVER_SIGNATURES: list[tuple[str, str, str]] = [
-    ('github.io', 'GitHub Pages', "There isn't a GitHub Pages site here"),
-    ('herokuapp.com', 'Heroku', 'No such app'),
-    ('herokudns.com', 'Heroku', 'No such app'),
-    ('s3.amazonaws.com', 'AWS S3', 'NoSuchBucket'),
-    ('s3-website', 'AWS S3 website', 'NoSuchBucket'),
-    ('azurewebsites.net', 'Azure App Service', 'Error 404 - Web app not found'),
-    ('cloudapp.net', 'Azure Cloud Service', 'NXDOMAIN'),
-    ('trafficmanager.net', 'Azure Traffic Manager', 'NXDOMAIN'),
-    ('blob.core.windows.net', 'Azure Blob', 'The requested URI does not represent'),
-    ('myshopify.com', 'Shopify', 'Sorry, this shop is currently unavailable'),
-    ('ghost.io', 'Ghost', 'The thing you were looking for is no longer here'),
-    ('helpjuice.com', 'Helpjuice', "We could not find what you're looking for"),
-    ('helpscoutdocs.com', 'HelpScout', 'No settings were found for this company'),
-    ('zendesk.com', 'Zendesk', 'Help Center Closed'),
-    ('readme.io', 'Readme', 'The creators of this project are still working'),
-    ('surge.sh', 'Surge', 'project not found'),
-    ('bitbucket.io', 'Bitbucket', 'Repository not found'),
-    ('pantheonsite.io', 'Pantheon', 'The gods are wise'),
-    ('wordpress.com', 'WordPress.com', "Do you want to register"),
-    ('statuspage.io', 'Statuspage', 'You are being redirected'),
-    ('netlify.app', 'Netlify', 'Not Found - Request ID'),
-    ('fly.dev', 'Fly.io', '404 Not Found'),
-    ('cargocollective.com', 'Cargo', '404 Not Found'),
-    ('webflow.io', 'Webflow', "The page you are looking for doesn't exist"),
-    ('unbouncepages.com', 'Unbounce', 'The requested URL was not found on this server'),
-    ('tumblr.com', 'Tumblr', "Whatever you were looking for doesn't currently exist"),
-    ('uservoice.com', 'UserVoice', 'This UserVoice subdomain is currently available'),
-    ('feedpress.me', 'FeedPress', 'The feed has not been found'),
+# (regex on the CNAME target, service, distinctive body fingerprint of an unclaimed resource).
+# Providers whose unclaimed page is generic (plain "404 Not Found") are deliberately excluded:
+# a false critical finding costs a customer more than a missed one.
+TAKEOVER_SIGNATURES: list[tuple[re.Pattern[str], str, str]] = [
+    (re.compile(r'(^|\.)github\.io$'), 'GitHub Pages', "There isn't a GitHub Pages site here"),
+    (re.compile(r'(^|\.)herokuapp\.com$'), 'Heroku', 'No such app'),
+    (re.compile(r'(^|\.)herokudns\.com$'), 'Heroku', 'No such app'),
+    (re.compile(r'(^|\.)s3[.-][a-z0-9.-]*amazonaws\.com$'), 'AWS S3', 'NoSuchBucket'),
+    (re.compile(r'(^|\.)azurewebsites\.net$'), 'Azure App Service', 'Error 404 - Web app not found'),
+    (re.compile(r'(^|\.)myshopify\.com$'), 'Shopify', 'Sorry, this shop is currently unavailable'),
+    (re.compile(r'(^|\.)ghost\.io$'), 'Ghost', 'The thing you were looking for is no longer here'),
+    (re.compile(r'(^|\.)helpjuice\.com$'), 'Helpjuice', "We could not find what you're looking for"),
+    (re.compile(r'(^|\.)helpscoutdocs\.com$'), 'HelpScout', 'No settings were found for this company'),
+    (re.compile(r'(^|\.)zendesk\.com$'), 'Zendesk', 'Help Center Closed'),
+    (re.compile(r'(^|\.)readme\.io$'), 'Readme', 'The creators of this project are still working'),
+    (re.compile(r'(^|\.)surge\.sh$'), 'Surge', 'project not found'),
+    (re.compile(r'(^|\.)bitbucket\.io$'), 'Bitbucket', 'Repository not found'),
+    (re.compile(r'(^|\.)pantheonsite\.io$'), 'Pantheon', 'The gods are wise'),
+    (re.compile(r'(^|\.)(wordpress|wpcomstaging)\.com$'), 'WordPress.com', 'Do you want to register'),
+    (re.compile(r'(^|\.)netlify\.app$'), 'Netlify', 'Not Found - Request ID'),
+    (re.compile(r'(^|\.)(proxy|proxy-ssl)\.webflow\.com$'), 'Webflow', "The page you are looking for doesn't exist"),
+    (re.compile(r'(^|\.)unbouncepages\.com$'), 'Unbounce', 'The requested URL was not found on this server'),
+    (re.compile(r'(^|\.)tumblr\.com$'), 'Tumblr', "Whatever you were looking for doesn't currently exist"),
+    (re.compile(r'(^|\.)uservoice\.com$'), 'UserVoice', 'This UserVoice subdomain is currently available'),
+    (re.compile(r'(^|\.)feedpress\.me$'), 'FeedPress', 'The feed has not been found'),
 ]
 
 
@@ -84,17 +79,22 @@ class Discovery:
             await asyncio.sleep(2 * attempt)
         raise RuntimeError(f'{url} failed after {attempts} attempts: {last_error}')
 
-    async def _certspotter(self, domain: str) -> set[str]:
-        data = await self._get_json(
-            'https://api.certspotter.com/v1/issuances',
-            {'domain': domain, 'include_subdomains': 'true', 'expand': 'dns_names'},
-        )
+    async def _certspotter(self, domain: str, max_pages: int = 3) -> set[str]:
         names: set[str] = set()
         now = datetime.now(timezone.utc)
-        for issuance in data:
-            if parse_ts(issuance['not_after']) < now:
-                continue
-            names.update(issuance.get('dns_names', []))
+        after: str | None = None
+        for _ in range(max_pages):
+            params = {'domain': domain, 'include_subdomains': 'true', 'expand': 'dns_names'}
+            if after:
+                params['after'] = after
+            data = await self._get_json('https://api.certspotter.com/v1/issuances', params)
+            for issuance in data:
+                if parse_ts(issuance['not_after']) < now:
+                    continue
+                names.update(issuance.get('dns_names', []))
+            if len(data) < 100:
+                break
+            after = data[-1]['id']
         return names
 
     async def _crtsh(self, domain: str) -> set[str]:
@@ -108,11 +108,12 @@ class Discovery:
         names: set[str] = set()
         for source in (self._certspotter, self._crtsh):
             try:
-                names |= await source(domain)
-                if names:
-                    break
+                found = await source(domain)
             except RuntimeError as exc:
                 Actor.log.warning(f'Discovery source {source.__name__} failed for {domain}: {exc}')
+                continue
+            Actor.log.info(f'{source.__name__} returned {len(found)} names for {domain}')
+            names |= found
         hosts = {n.strip().lower().rstrip('.') for n in names}
         hosts = {h for h in hosts if not h.startswith('*') and (h == domain or h.endswith('.' + domain)) and HOST_RE.match(h)}
         hosts.add(domain)
@@ -159,6 +160,30 @@ async def resolve_chain(client: httpx.AsyncClient, host: str) -> dict[str, Any]:
     return {'chain': chain, 'nxdomain': nxdomain, 'resolves': bool(ips), 'ips': ips}
 
 
+DER_TIME_RE = re.compile(rb'\x17\x0d(\d{12})Z|\x18\x0f(\d{14})Z')
+
+
+def not_after_from_der(der: bytes) -> datetime | None:
+    """Read the certificate validity end from raw DER bytes.
+
+    A X.509 TBSCertificate stores exactly two ASN.1 time values (notBefore, notAfter)
+    in its validity block before the subject name, so the second match is notAfter.
+    Only used when chain validation failed and ``ssl`` refuses to decode the peer cert.
+    """
+    if not der:
+        return None
+    matches = DER_TIME_RE.findall(der)
+    if len(matches) < 2:
+        return None
+    utc_time, generalized_time = matches[1]
+    try:
+        if utc_time:
+            return datetime.strptime(f'{utc_time.decode()}Z', '%y%m%d%H%M%SZ').replace(tzinfo=timezone.utc)
+        return datetime.strptime(f'{generalized_time.decode()}Z', '%Y%m%d%H%M%SZ').replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
 def _tls_probe_sync(host: str, timeout: float) -> dict[str, Any]:
     result: dict[str, Any] = {'tls_ok': False, 'tls_error': None, 'issuer': None, 'not_after': None, 'days_left': None}
     context = ssl.create_default_context()
@@ -179,6 +204,10 @@ def _tls_probe_sync(host: str, timeout: float) -> dict[str, Any]:
                 with insecure.wrap_socket(raw, server_hostname=host) as tls:
                     der = tls.getpeercert(binary_form=True)
                     result['_der'] = der
+                    expires = not_after_from_der(der)
+                    if expires:
+                        result['not_after'] = expires.isoformat()
+                        result['days_left'] = (expires - datetime.now(timezone.utc)).days
         except (OSError, ssl.SSLError):
             pass
         return result
@@ -213,8 +242,8 @@ async def http_fingerprint(client: httpx.AsyncClient, host: str) -> tuple[int | 
 
 def match_signature(targets: list[str]) -> tuple[str, str] | None:
     for target in targets:
-        for suffix, service, fingerprint in TAKEOVER_SIGNATURES:
-            if suffix in target:
+        for pattern, service, fingerprint in TAKEOVER_SIGNATURES:
+            if pattern.search(target):
                 return service, fingerprint
     return None
 
@@ -257,10 +286,15 @@ async def audit_host(
             if not findings:
                 return None
         elif not tls['tls_ok']:
+            days_left = tls.get('days_left')
+            expired = (days_left is not None and days_left < 0) or 'expired' in str(tls['tls_error']).lower()
+            detail = f'TLS validation failed: {tls["tls_error"]}.'
+            if tls.get('not_after'):
+                detail += f' Certificate notAfter={tls["not_after"]} ({days_left} days).'
             findings.append({
-                'type': 'invalid_certificate',
-                'severity': 'critical' if 'expired' in str(tls['tls_error']).lower() else 'high',
-                'detail': f'TLS validation failed: {tls["tls_error"]}.',
+                'type': 'certificate_expired' if expired else 'invalid_certificate',
+                'severity': 'critical' if expired else 'high',
+                'detail': detail,
             })
         elif tls['days_left'] is not None and tls['days_left'] <= warn_days:
             findings.append({
@@ -322,6 +356,7 @@ async def main() -> None:
         stop = asyncio.Event()
         stats = {'audited': 0, 'findings': 0, 'errors': 0}
         semaphore = asyncio.Semaphore(concurrency)
+        seen_hosts: set[str] = set()
 
         async with httpx.AsyncClient(
             headers={'user-agent': USER_AGENT}, proxy=proxy_url, limits=limits, verify=False
@@ -329,8 +364,9 @@ async def main() -> None:
             discovery = Discovery(api_client)
 
             async def worker(host: str, root: str) -> None:
-                if stop.is_set():
+                if stop.is_set() or host in seen_hosts:
                     return
+                seen_hosts.add(host)
                 async with semaphore:
                     if stop.is_set():
                         return

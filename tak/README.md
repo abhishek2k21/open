@@ -89,6 +89,30 @@ curl -X POST "https://api.apify.com/v2/acts/USERNAME~subdomain-takeover-cert-exp
 **MCP / AI agents**: add this Actor through the Apify MCP server (`https://mcp.apify.com?actors=USERNAME/subdomain-takeover-cert-expiry-radar`). Prompt: "Use the radar to list risky subdomains of example.com with certificates expiring in 14 days." Schedule it daily with `onlyRisks: true` and connect a webhook to Slack.
 
 ## Notes and limits
-- Subdomains come from Certificate Transparency (Cert Spotter, with crt.sh fallback). Hosts that never had a public certificate are not discovered.
-- Takeover detection needs a provider fingerprint match; unknown providers are reported only as dangling CNAMEs.
+- Subdomains come from Certificate Transparency (Cert Spotter, merged with crt.sh). Hosts that never had a public certificate are not discovered.
+- Takeover detection needs both a known-provider CNAME and that provider's unclaimed-resource page; unknown providers are reported only as dangling CNAMEs.
+- Severity: `critical` = confirmed takeover or expired certificate, `high` = dangling CNAME or invalid certificate or expiry within 7 days, `medium` = expiry inside the warning window, `info` = healthy.
 - Only audit domains you own or are authorised to test.
+
+## Run and verify locally
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+apify validate-schema          # validates INPUT_SCHEMA.json and dataset_schema.json
+python -m pytest               # 28 offline tests, no network needed
+
+apify run --purge              # live run with the default input
+ls storage/datasets/default | wc -l    # expect ~40 records for mozilla.org
+
+# simulate pay-per-event billing locally and inspect what was charged
+ACTOR_TEST_PAY_PER_EVENT=true apify run
+ls storage/datasets/charging_log
+```
+
+## Deploy
+```bash
+apify login
+apify push
+```
+Then in Apify Console open **Publication > Monetization**, choose **Pay per event** and add the two events from `.actor/pay_per_event.json` (`host-audited` $0.01, `risk-finding` $0.12). Publish, then schedule the Actor daily with `onlyRisks: true` and a webhook to Slack for new findings.
