@@ -29,7 +29,7 @@ pip install -r requirements-dev.txt
 
 python -m pytest                 # offline tests, ~1s
 python -m compileall -q src      # no syntax errors in the Docker image
-apify validate-schema            # INPUT_SCHEMA.json + dataset schema
+apify validate-schema            # input + dataset + output schemas
 ```
 
 Then one live run with the exact input the Store's daily test uses (the `prefill` values):
