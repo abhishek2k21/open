@@ -1,4 +1,4 @@
-# Subdomain Takeover & Cert Expiry Radar
+# Subdomain Takeover & Certificate Expiry Radar
 
 Live attack-surface audit for security, DevOps and MSP teams. Give it root domains; it discovers every subdomain from public Certificate Transparency logs, resolves DNS over HTTPS, probes TLS and flags the issues that cause real outages and breaches:
 
@@ -116,3 +116,5 @@ apify login
 apify push
 ```
 Then in Apify Console open **Publication > Monetization**, choose **Pay per event** and add the two events from `.actor/pay_per_event.json` (`host-audited` $0.01, `risk-finding` $0.12). Publish, then schedule the Actor daily with `onlyRisks: true` and a webhook to Slack for new findings.
+
+The full Console walkthrough - listing copy, event configuration, synthetic-event handling, quality gates and a 90-day growth plan - lives in [PUBLISHING.md](./PUBLISHING.md).

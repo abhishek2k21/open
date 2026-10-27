@@ -1,0 +1,14 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Subdomain takeover & certificate expiry audit",
+  "description": "One record per audited host with its severity, findings, CNAME chain, third-party service, resolved IPs and live TLS certificate details.",
+  "type": "object",
+  "properties": {
+    "auditResults": {
+      "type": "string",
+      "title": "Audit results",
+      "description": "Dataset with one row per audited host: severity (info/medium/high/critical), finding types (subdomain_takeover, dangling_cname, certificate_expired, invalid_certificate, certificate_expiring), CNAME chain, third-party service, issuer, certificate expiry and days left.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}

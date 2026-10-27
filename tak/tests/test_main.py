@@ -13,6 +13,11 @@ def run(coro):
     return asyncio.run(coro)
 
 
+async def _no_sleep(seconds: float) -> None:
+    """Skip real backoff delays inside tests."""
+    return None
+
+
 def _transport(responses: dict) -> httpx.MockTransport:
     def handler(request: httpx.Request) -> httpx.Response:
         key = (request.url.params.get('name'), request.url.params.get('type'))
@@ -153,6 +158,33 @@ def test_unresolvable_host_is_skipped(monkeypatch) -> None:
     patch_tls(monkeypatch)
     record = audit({('a.example.com', 'CNAME'): nxdomain(), ('a.example.com', 'A'): nxdomain()})
     assert record is None
+
+
+def test_transient_tls_failure_is_retried_once(monkeypatch) -> None:
+    calls = {'count': 0}
+
+    async def flaky_tls(host: str, timeout: float) -> dict:
+        calls['count'] += 1
+        if calls['count'] == 1:
+            return {'tls_ok': False, 'tls_error': 'connect_failed: ConnectionResetError', 'unreachable': True}
+        return healthy_tls(days_left=200, not_after='2027-05-01T00:00:00+00:00')
+
+    monkeypatch.setattr(radar, 'tls_probe', flaky_tls)
+    monkeypatch.setattr(radar.asyncio, 'sleep', _no_sleep)
+    record = audit(DIRECT_DNS)
+    assert record is not None
+    assert calls['count'] == 2
+    assert record['severity'] == 'info'
+    assert record['tlsValid'] is True
+
+
+def test_persistent_tls_failure_skips_host(monkeypatch) -> None:
+    async def dead_tls(host: str, timeout: float) -> dict:
+        return {'tls_ok': False, 'tls_error': 'connect_failed: ConnectionResetError', 'unreachable': True}
+
+    monkeypatch.setattr(radar, 'tls_probe', dead_tls)
+    monkeypatch.setattr(radar.asyncio, 'sleep', _no_sleep)
+    assert audit(DIRECT_DNS) is None
 
 
 def test_certificate_expiring_inside_seven_days_is_high(monkeypatch) -> None:

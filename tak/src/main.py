@@ -283,6 +283,10 @@ async def audit_host(
     if dns['resolves']:
         tls = await tls_probe(host, probe_timeout)
         if tls.get('unreachable'):
+            # One retry: transient TCP resets are the main cause of flaky Store test runs.
+            await asyncio.sleep(1)
+            tls = await tls_probe(host, probe_timeout)
+        if tls.get('unreachable'):
             if not findings:
                 return None
         elif not tls['tls_ok']:

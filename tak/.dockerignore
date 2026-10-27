@@ -1,5 +1,5 @@
 .venv
+__pycache__
+.pytest_cache
 storage
-tests
-**/__pycache__
-.git
+ci
