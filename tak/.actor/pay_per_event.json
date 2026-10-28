@@ -1,0 +1,12 @@
+{
+  "host-audited": {
+    "eventTitle": "Host audited",
+    "eventDescription": "One live subdomain that resolved in DNS and answered a TLS or HTTP probe; one verified audit record is returned.",
+    "eventPriceUsd": 0.01
+  },
+  "risk-finding": {
+    "eventTitle": "Verified risk finding",
+    "eventDescription": "A host with a live-verified medium, high or critical issue (takeover risk, expired or invalid certificate, or certificate expiring inside the warning window).",
+    "eventPriceUsd": 0.12
+  }
+}

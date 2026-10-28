@@ -1,0 +1,4 @@
+apify==2.7.3
+httpx==0.28.1
+pydantic==2.11.9
+browserforge==1.2.3

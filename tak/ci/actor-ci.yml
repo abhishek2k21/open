@@ -1,0 +1,47 @@
+name: Actor CI
+
+on:
+  push:
+    paths:
+      - 'tak/**'
+      - '.github/workflows/actor-ci.yml'
+  pull_request:
+    paths:
+      - 'tak/**'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Tests and schema validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tak
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: tak/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Unit tests (offline)
+        run: python -m pytest
+
+      - name: Byte-compile Actor sources
+        run: python -m compileall -q src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Apify CLI
+        run: npm install -g apify-cli@1.10.0
+
+      - name: Validate Actor schemas
+        run: apify validate-schema
