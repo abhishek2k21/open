@@ -22,6 +22,8 @@ The slug `subdomain-takeover-cert-expiry-radar` is 36 characters, lowercase + hy
 
 ## Phase 1 - local release gate (must be green before pushing)
 
+Python 3.9+ is enough locally; the Docker image runs 3.12. If your `python3` is 3.9 (macOS default), everything below still works - the code and tests use `from __future__ import annotations` for that reason.
+
 ```bash
 cd /workspace/tak
 python3 -m venv .venv && source .venv/bin/activate

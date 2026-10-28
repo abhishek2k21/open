@@ -95,6 +95,8 @@ curl -X POST "https://api.apify.com/v2/acts/USERNAME~subdomain-takeover-cert-exp
 - Only audit domains you own or are authorised to test.
 
 ## Run and verify locally
+Requires Python 3.9 or newer (the Docker image runs 3.12; the test suite is kept 3.9-compatible because macOS ships 3.9 by default).
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
