@@ -391,8 +391,8 @@ git log --oneline -1              # must equal: git rev-parse origin/cline/1ch18
 
 ```bash
 cd tak
-grep -c "3.1b The" PUBLISHING.md      # 1
-grep -c "What counts as a subdomain takeover" README.md   # 1
+grep -n "^### 3.1b" PUBLISHING.md                     # exactly one match
+grep -n "What counts as a subdomain takeover" README.md  # exactly one match
 make test                             # 30 passed
 make validate                         # 3 schema successes
 ```
