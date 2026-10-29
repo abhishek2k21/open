@@ -95,17 +95,50 @@ curl -X POST "https://api.apify.com/v2/acts/USERNAME~subdomain-takeover-cert-exp
 - Only audit domains you own or are authorised to test.
 
 ## Run and verify locally
+
+Requires Python 3.9 or newer. The Docker image runs 3.12, and the suite stays 3.9-compatible because macOS ships 3.9 as `/usr/bin/python3`.
+
+The Makefile picks `uv` when it is installed and falls back to a plain `venv` otherwise:
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
+make setup
+make test
+make validate
+make run
+```
+
+Manual setup with uv (recommended on macOS - Homebrew's `python3` may be newer than the dependencies support):
+
+```bash
+uv python install 3.12
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip install -r requirements-dev.txt
+```
+
+Manual setup without uv, using Apple's system Python 3.9 (always present, never PEP 668 managed):
+
+```bash
+/usr/bin/python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements-dev.txt
+```
 
-apify validate-schema          # validates INPUT_SCHEMA.json and dataset_schema.json
-python -m pytest               # 28 offline tests, no network needed
+Then confirm the interpreter before running anything:
 
-apify run --purge              # live run with the default input
-ls storage/datasets/default | wc -l    # expect ~40 records for mozilla.org
+```bash
+which python3
+python -m pytest
+apify validate-schema
+apify run --purge
+ls storage/datasets/default | wc -l
+```
 
-# simulate pay-per-event billing locally and inspect what was charged
+`which python3` must print the path inside `.venv`. If it prints `/opt/homebrew/bin/python3` or `/usr/bin/python3`, the shell is not activated and `apify run` will fail with `ModuleNotFoundError: No module named 'httpx'`. The record count should be around 40 for the default `mozilla.org` input.
+
+To verify billing locally without the platform:
+
+```bash
 ACTOR_TEST_PAY_PER_EVENT=true apify run
 ls storage/datasets/charging_log
 ```

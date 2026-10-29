@@ -1,5 +1,7 @@
 """Offline tests for the radar's detection logic. No network access required."""
 
+from __future__ import annotations
+
 import asyncio
 from datetime import datetime, timezone
 

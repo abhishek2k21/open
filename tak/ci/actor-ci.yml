@@ -12,9 +12,15 @@ on:
 
 jobs:
   verify:
-    name: Tests and schema validation
+    name: Tests and schema validation (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is the oldest interpreter developers run locally (macOS system python).
+        # 3.12 matches the apify/actor-python image used in production.
+        python-version: ['3.9', '3.12']
     defaults:
       run:
         working-directory: tak
@@ -23,7 +29,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: tak/requirements-dev.txt
 
@@ -37,11 +43,14 @@ jobs:
         run: python -m compileall -q src
 
       - uses: actions/setup-node@v4
+        if: matrix.python-version == '3.12'
         with:
           node-version: '20'
 
       - name: Install Apify CLI
+        if: matrix.python-version == '3.12'
         run: npm install -g apify-cli@1.10.0
 
       - name: Validate Actor schemas
+        if: matrix.python-version == '3.12'
         run: apify validate-schema

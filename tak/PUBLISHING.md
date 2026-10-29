@@ -22,22 +22,28 @@ The slug `subdomain-takeover-cert-expiry-radar` is 36 characters, lowercase + hy
 
 ## Phase 1 - local release gate (must be green before pushing)
 
-```bash
-cd /workspace/tak
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
+Python 3.9+ is enough locally; the Docker image runs 3.12. If your `python3` is 3.9 (macOS default), everything below still works - the code and tests use `from __future__ import annotations` for that reason.
 
-python -m pytest                 # offline tests, ~1s
+```bash
+cd /absolute/path/to/open/tak
+
+make setup                       # uv if installed, plain venv otherwise
+source .venv/bin/activate
+which python3                    # MUST print .../tak/.venv/bin/python3
+
+make test                        # offline tests, ~1s
+make validate                    # input + dataset + output schemas
 python -m compileall -q src      # no syntax errors in the Docker image
-apify validate-schema            # input + dataset + output schemas
 ```
 
 Then one live run with the exact input the Store's daily test uses (the `prefill` values):
 
 ```bash
-apify run --purge
-ls storage/datasets/default | wc -l    # ~40 for mozilla.org; must be > 0
+make run
+ls storage/datasets/default | wc -l
 ```
+
+The count should be around 40 for `mozilla.org`; anything above 0 satisfies the Store test.
 
 **Hard gate:** the automated Store test runs your `prefill` input, expects **Succeeded** plus a **non-empty default dataset within 5 minutes**, and marks the Actor *Under maintenance* if more than half of runs in a rolling 3-day window fail. The default input resolves in seconds; do not raise `maxHostsPerDomain` above ~200 in `prefill`.
 
@@ -45,7 +51,7 @@ Optional but recommended before pricing goes live:
 
 ```bash
 ACTOR_TEST_PAY_PER_EVENT=true apify run
-ls storage/datasets/charging_log      # confirms 1 charge per saved record
+ls storage/datasets/charging_log
 ```
 
 ---
@@ -87,7 +93,7 @@ Complete all five sections; the Publish button unlocks only when every section i
 | Description | `Live attack-surface audit: finds dangling CNAME subdomain-takeover risks and expiring, expired or invalid TLS certificates across your domains.` (143 chars) |
 | Categories | `Developer tools` primary; add `Other` only if the dropdown offers no security category. API enum form is `["DEVELOPER_TOOLS"]` |
 | Tags / keywords | subdomain takeover, dangling CNAME, SSL expiry, certificate expiry monitoring, TLS scanner, attack surface management, EASM, DNS security, certificate transparency, security monitoring, compliance |
-| Icon | 512×512 PNG, transparent background, high contrast, under 200 KB |
+| Icon | 512×512 PNG, transparent background, high contrast, under 200 KB. A ready one ships in `assets/logo-512.png`; prompts and palette are in `assets/LOGO_BRIEF.md` |
 
 Store search and the Apify MCP `search-actors` tool rank on the same quality score, and the title is the strongest keyword signal. Do not rename the title after launch unless you have data - it resets user recognition.
 
@@ -281,3 +287,40 @@ Then Console: Actor → **Source** → Git integration → connect the new repo.
 - [ ] Daily schedule + Slack webhook running on your own account
 
 Leave **Hide source files** checked unless you want the Open Source Fair Share revenue share. Your code stays private either way; unchecking only exposes it on the detail page.
+
+---
+
+## Appendix - fixing local setup failures (macOS)
+
+These are environment failures, not Actor failures. Match the error text, apply the fix, re-run `make setup`.
+
+| Error you see | Root cause | Fix |
+|---|---|---|
+| `uv: Broken Python installation, platform.mac_ver() returned an empty value` | `uv` refuses to use a Homebrew Python whose `platform.mac_ver()` is broken (common with brand-new `python@3.15` builds) | Do not point uv at Homebrew. Run `uv python install 3.12` then `uv venv .venv --python 3.12` |
+| `python3 -m venv .venv` prints `ensurepip ... returned non-zero exit status 1` | Same broken Homebrew interpreter; `ensurepip` cannot run | Use uv-managed Python (above) or Apple's `/usr/bin/python3 -m venv .venv`, or `brew reinstall python@3.13` |
+| `error: externally-managed-environment` (PEP 668) | `pip install` ran outside a virtualenv, against Homebrew's Python | Activate the venv first; verify `which python3` points into `.venv`. Never use `--break-system-packages` |
+| `apify run` fails with `ModuleNotFoundError: No module named 'httpx'` | The CLI launches `python3 -m src` and resolved the Homebrew/system interpreter from `PATH` | Activate the venv, or use `make run`, which forces `PATH=tak/.venv/bin:$PATH` |
+| `zsh: unknown file attribute: i` or `zsh: no such user or named directory: 25-60s` | The shell expands `(input, dataset, output)` as a glob qualifier and `~40` as a tilde when inline comments are not enabled | Paste commands without the trailing comments, or run `setopt interactive_comments`. The `make` targets carry no inline comments |
+| `brew install uv` aborted mid-download | Interrupted download, incomplete formula | Re-run `brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh | sh` |
+
+Canonical recovery sequence after a failed attempt:
+
+```bash
+deactivate 2>/dev/null
+rm -rf .venv
+uv python install 3.12
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip install -r requirements-dev.txt
+which python3
+python -m pytest
+```
+
+If uv is not available and Homebrew Python is broken, the Apple system interpreter is the zero-dependency fallback (verified: the suite passes on 3.9.25):
+
+```bash
+/usr/bin/python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+python -m pytest
+```
