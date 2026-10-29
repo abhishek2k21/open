@@ -99,12 +99,6 @@ Complete all five sections; the Publish button unlocks only when every section i
 
 Store search and the Apify MCP `search-actors` tool rank on the same quality score, and the title is the strongest keyword signal. Do not rename the title after launch unless you have data - it resets user recognition.
 
-### 3.1b The "Actor README Generator" link - skip it
-
-The Publishing tab links to `apify/actor-readme-generator`, a third-party Actor ($0.05 per README) that feeds a **scraper-oriented** template plus your own OpenAI key to GPT-3.5 and writes markdown to a key-value store. It does not edit your Actor, and Apify states the output is not final.
-
-Skip it for this Actor. The template assumes a scraping tool, while this is a security audit product, and the README in this repo already covers the sections the Store scores: value proposition, detection rules, pricing, input table, output sample, integrations, MCP usage and limits. If you want a second opinion, paste the generated draft into a scratch file and cherry-pick ideas - never overwrite `README.md` with it.
-
 ### 3.1a Categories and keywords without a tags field
 
 The Publishing tab shows *"Categories are auto-assigned based on your Actor. Your categories are assigned after you publish."* This is expected - there is nothing to select, and the Publish button does not wait for it.
@@ -114,6 +108,12 @@ Consequences for SEO:
 1. **Keywords must live in prose you control**: title, SEO title, description, SEO description, and the README's H2/H3 headings. The README is the largest keyword surface available, and it is also what AI assistants and Google quote.
 2. **After publishing, verify the assigned categories** on the public Actor page. If they are wrong (for example filed under E-commerce), use the **feedback** link next to the categories and say which category fits. Do not rename the Actor to force a category.
 3. **Never** rename the Actor to chase a category - the URL cannot change after creation and renaming resets recognition.
+
+### 3.1b The "Actor README Generator" link - skip it
+
+The Publishing tab links to `apify/actor-readme-generator`, a third-party Actor ($0.05 per README) that feeds a **scraper-oriented** template plus your own OpenAI key to GPT-3.5 and writes markdown to a key-value store. It does not edit your Actor, and Apify states the output is not final.
+
+Skip it for this Actor. The template assumes a scraping tool, while this is a security audit product, and the README in this repo already covers the sections the Store scores: value proposition, detection rules, pricing, input table, output sample, integrations, MCP usage and limits. If you want a second opinion, paste the generated draft into a scratch file and cherry-pick ideas - never overwrite `README.md` with it.
 
 ### 3.2 Sample output
 
