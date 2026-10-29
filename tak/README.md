@@ -161,6 +161,13 @@ ls storage/datasets/charging_log
 apify login
 apify push
 ```
-Then in Apify Console open **Publication > Monetization**, choose **Pay per event** and add the two events from `.actor/pay_per_event.json` (`host-audited` $0.01, `risk-finding` $0.12). Publish, then schedule the Actor daily with `onlyRisks: true` and a webhook to Slack for new findings.
+Then in Apify Console open **Publishing → Monetization → Set up monetization**:
+
+1. **Delete** the `apify-default-dataset-item` event (every saved record already fires `host-audited`, so leaving it bills twice).
+2. Keep `apify-actor-start` at `$0.005`.
+3. Add `host-audited` at `$0.01` and `risk-finding` at `$0.12`.
+4. Set the **primary event** to `host-audited`, then review and confirm.
+
+Categories are assigned automatically by Apify after publishing and there is no tags field; keywords live in the title, SEO fields and this README. Schedule the Actor daily with `onlyRisks: true` and a webhook to Slack for new findings.
 
 The full Console walkthrough - listing copy, event configuration, synthetic-event handling, quality gates and a 90-day growth plan - lives in [PUBLISHING.md](./PUBLISHING.md).
