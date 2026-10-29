@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Subdomain takeover and certificate expiry radar">
+  <title>Subdomain Takeover &amp; Certificate Expiry Radar</title>
+  <desc>Hexagonal radar scope: three healthy hosts in green, one expiring certificate in amber with a warning ring.</desc>
+  <defs>
+    <linearGradient id="sweep" x1="256" y1="250" x2="392" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0.80"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0.04"/>
+    </linearGradient>
+  </defs>
+
+  <polygon points="256,56 424,152 424,344 256,440 88,344 88,152" fill="#0F1B2E" stroke="#22D3EE" stroke-width="20" stroke-linejoin="round"/>
+
+  <g fill="none" stroke="#22D3EE" stroke-opacity="0.50" stroke-width="10">
+    <circle cx="256" cy="250" r="72"/>
+    <circle cx="256" cy="250" r="120"/>
+  </g>
+
+  <path d="M256 250 L228.1 147.6 A120 120 0 0 1 373.4 225.1 Z" fill="url(#sweep)"/>
+
+  <g stroke="#22D3EE" stroke-opacity="0.20" stroke-width="4">
+    <line x1="256" y1="118" x2="256" y2="382"/>
+    <line x1="124" y1="250" x2="388" y2="250"/>
+  </g>
+
+  <circle cx="351" cy="176" r="18" fill="#22C55E"/>
+  <circle cx="226" cy="315" r="18" fill="#22C55E"/>
+  <circle cx="143" cy="291" r="18" fill="#22C55E"/>
+
+  <circle cx="188" cy="225" r="34" fill="none" stroke="#F59E0B" stroke-opacity="0.60" stroke-width="7"/>
+  <circle cx="188" cy="225" r="18" fill="#F59E0B"/>
+
+  <circle cx="256" cy="250" r="11" fill="#E2E8F0"/>
+</svg>

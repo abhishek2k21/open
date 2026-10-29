@@ -93,7 +93,7 @@ Complete all five sections; the Publish button unlocks only when every section i
 | Description | `Live attack-surface audit: finds dangling CNAME subdomain-takeover risks and expiring, expired or invalid TLS certificates across your domains.` (143 chars) |
 | Categories | `Developer tools` primary; add `Other` only if the dropdown offers no security category. API enum form is `["DEVELOPER_TOOLS"]` |
 | Tags / keywords | subdomain takeover, dangling CNAME, SSL expiry, certificate expiry monitoring, TLS scanner, attack surface management, EASM, DNS security, certificate transparency, security monitoring, compliance |
-| Icon | 512×512 PNG, transparent background, high contrast, under 200 KB |
+| Icon | 512×512 PNG, transparent background, high contrast, under 200 KB. A ready one ships in `assets/logo-512.png`; prompts and palette are in `assets/LOGO_BRIEF.md` |
 
 Store search and the Apify MCP `search-actors` tool rank on the same quality score, and the title is the strongest keyword signal. Do not rename the title after launch unless you have data - it resets user recognition.
 
