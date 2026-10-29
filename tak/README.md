@@ -9,6 +9,19 @@ Live attack-surface audit for security, DevOps and MSP teams. Give it root domai
 
 Every result is checked live at run time. No mock data, no cached lists.
 
+## What counts as a subdomain takeover or certificate risk
+
+| Finding type | Severity | Detection rule |
+|---|---|---|
+| `subdomain_takeover` | critical | The CNAME points at a known hosting provider **and** that provider serves its "unclaimed resource" page (GitHub Pages, Heroku, AWS S3, Azure App Service, Shopify, Netlify, Webflow, Zendesk, Tumblr, UserVoice and others) |
+| `certificate_expired` | critical | The TLS handshake fails and the served certificate's `notAfter` is in the past |
+| `dangling_cname` | high / critical | The CNAME chain ends at a name that no longer exists in DNS (NXDOMAIN) - anyone can register it. Critical when the target belongs to a known provider |
+| `invalid_certificate` | high | Validation fails for any other reason: hostname mismatch, incomplete chain, unknown issuer |
+| `certificate_expiring` | medium / high | The certificate expires inside your `expiryWarningDays` window; high when 7 days or fewer remain |
+| - | info | Host resolves, TLS validates, certificate is outside the warning window |
+
+Every row is produced by a live DNS-over-HTTPS walk plus a live TLS handshake at run time - no cached lists, no synthetic data. Hosts that do not resolve are skipped and never charged.
+
 ## Who uses it
 - Security teams running scheduled external attack-surface monitoring.
 - MSPs and agencies watching client domains.

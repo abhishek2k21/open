@@ -85,17 +85,27 @@ Complete all five sections; the Publish button unlocks only when every section i
 
 ### 3.1 Display information
 
-| Field | Value |
-|---|---|
-| Actor name (title) | `Subdomain Takeover & Certificate Expiry Radar` (45 chars) |
-| SEO title | `Subdomain Takeover and SSL Expiry Scanner` (41 chars, recommended 40–50) |
-| SEO description | `Scan your domains for subdomain takeover, dangling CNAMEs and expiring TLS certificates. Live DNS and certificate checks, clean JSON output.` (140 chars, recommended 140–156) |
-| Description | `Live attack-surface audit: finds dangling CNAME subdomain-takeover risks and expiring, expired or invalid TLS certificates across your domains.` (143 chars) |
-| Categories | `Developer tools` primary; add `Other` only if the dropdown offers no security category. API enum form is `["DEVELOPER_TOOLS"]` |
-| Tags / keywords | subdomain takeover, dangling CNAME, SSL expiry, certificate expiry monitoring, TLS scanner, attack surface management, EASM, DNS security, certificate transparency, security monitoring, compliance |
-| Icon | 512×512 PNG, transparent background, high contrast, under 200 KB. A ready one ships in `assets/logo-512.png`; prompts and palette are in `assets/LOGO_BRIEF.md` |
+| Field | Value | Limit |
+|---|---|---|
+| Actor name (title) | `Subdomain Takeover & Certificate Expiry Radar` | 45 chars (recommended 40–50) |
+| SEO title | `Subdomain Takeover and SSL Expiry Scanner` | 41 chars (recommended 40–50) |
+| SEO description | `Detect subdomain takeover, dangling CNAMEs and expiring or invalid TLS certificates on your domains. Live DNS and cert checks with clean JSON output.` | 149 chars (recommended 145–155) |
+| Description | `Find subdomain takeover risks and expiring TLS certificates before attackers or outages do. Discovery from Certificate Transparency logs, CNAME chain analysis, live TLS probes and dangling DNS detection, with one clean JSON record per host for security, DevOps and MSP teams.` | 275 chars (max 300) |
+| Icon | `assets/logo-512.png` - 512×512 PNG, transparent, 36 KB; prompts in `assets/LOGO_BRIEF.md` | under 200 KB |
+| Categories | **Nothing to fill in.** Apify assigns categories automatically after publishing, based on the title, description and README | auto |
+| Tags | **There is no tags field.** Keywords live in the title, SEO title, description, SEO description and README headings | n/a |
 
 Store search and the Apify MCP `search-actors` tool rank on the same quality score, and the title is the strongest keyword signal. Do not rename the title after launch unless you have data - it resets user recognition.
+
+### 3.1a Categories and keywords without a tags field
+
+The Publishing tab shows *"Categories are auto-assigned based on your Actor. Your categories are assigned after you publish."* This is expected - there is nothing to select, and the Publish button does not wait for it.
+
+Consequences for SEO:
+
+1. **Keywords must live in prose you control**: title, SEO title, description, SEO description, and the README's H2/H3 headings. The README is the largest keyword surface available, and it is also what AI assistants and Google quote.
+2. **After publishing, verify the assigned categories** on the public Actor page. If they are wrong (for example filed under E-commerce), use the **feedback** link next to the categories and say which category fits. Do not rename the Actor to force a category.
+3. **Never** rename the Actor to chase a category - the URL cannot change after creation and renaming resets recognition.
 
 ### 3.2 Sample output
 
@@ -191,7 +201,9 @@ A daily monitoring customer with 500 hosts spends roughly $1,230/month at the wo
 curl -s "https://api.apify.com/v2/acts/engraved_peanut~subdomain-takeover-cert-expiry-radar?token=$APIFY_TOKEN" | jq '.data.isPublic'
 ```
 
-4. Run the public page's **Try for free / Start** button once. This is the exact path a Store buyer takes. Confirm: prefill loads, run succeeds, the Output tab shows the table, and the price estimate is visible before starting.
+4. Confirm the auto-assigned **categories** on the public page match the product. Use the feedback link if they do not; there is no field to set them.
+
+5. Run the public page's **Try for free / Start** button once. This is the exact path a Store buyer takes. Confirm: prefill loads, run succeeds, the Output tab shows the table, and the price estimate is visible before starting.
 
 ---
 
@@ -279,7 +291,8 @@ Then Console: Actor → **Source** → Git integration → connect the new repo.
 - [ ] `python -m pytest` green, `apify validate-schema` green
 - [ ] `apify run --purge` produces more than 5 records with prefill input
 - [ ] `apify push` succeeded, platform run Succeeded, dataset table renders
-- [ ] Title 45 chars, SEO title 41, SEO description 140, icon uploaded
+- [ ] Title 45 chars, SEO title 41, SEO description 149, description 275, icon uploaded
+- [ ] Categories left alone (auto-assigned after publish, verified afterwards)
 - [ ] `apify-default-dataset-item` **deleted**, `apify-actor-start` plus two custom events priced
 - [ ] Primary event = `host-audited`
 - [ ] Limited permissions selected, output schema present, sample output pasted
