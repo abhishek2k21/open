@@ -74,6 +74,8 @@ apify actors call engraved_peanut/subdomain-takeover-cert-expiry-radar   # runs 
 
 Check in Console → Actor → **Runs**: status Succeeded, log shows `Audited N live hosts`, **Storage → Default dataset** renders the table view from `dataset_schema.json` (if it does not, the dataset schema is the thing to fix, not the code).
 
+**Everything you publish is uploaded by `apify push`:** the Dockerfile, `src/`, `.actor/*` schemas and `README.md`. Editing a file on GitHub does **not** change the Actor page - the Store renders the README that was in the last build. After any README change, push again before touching the Publishing tab, or buyers will read the old copy.
+
 **Release rhythm from here on:** bump `version` in `.actor/actor.json` (`1.0 → 1.1`) for every push. Each version keeps its builds, so rollback is a build-tag move, not a hotfix in production.
 
 
@@ -96,6 +98,12 @@ Complete all five sections; the Publish button unlocks only when every section i
 | Tags | **There is no tags field.** Keywords live in the title, SEO title, description, SEO description and README headings | n/a |
 
 Store search and the Apify MCP `search-actors` tool rank on the same quality score, and the title is the strongest keyword signal. Do not rename the title after launch unless you have data - it resets user recognition.
+
+### 3.1b The "Actor README Generator" link - skip it
+
+The Publishing tab links to `apify/actor-readme-generator`, a third-party Actor ($0.05 per README) that feeds a **scraper-oriented** template plus your own OpenAI key to GPT-3.5 and writes markdown to a key-value store. It does not edit your Actor, and Apify states the output is not final.
+
+Skip it for this Actor. The template assumes a scraping tool, while this is a security audit product, and the README in this repo already covers the sections the Store scores: value proposition, detection rules, pricing, input table, output sample, integrations, MCP usage and limits. If you want a second opinion, paste the generated draft into a scratch file and cherry-pick ideas - never overwrite `README.md` with it.
 
 ### 3.1a Categories and keywords without a tags field
 
