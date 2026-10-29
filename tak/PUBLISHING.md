@@ -117,32 +117,46 @@ Skip it for this Actor. The template assumes a scraping tool, while this is a se
 
 ### 3.2 Sample output
 
-Paste the first item of a successful run (Console → last run → Default dataset → JSON view). Prefer a **risk** row: run once with `expiryWarningDays: 70` on a domain with Let's Encrypt certificates and you get `medium` findings. A sample showing a real finding sells better than an all-`info` table:
+This is the most persuasive field on the page: it is what a buyer sees instead of a screenshot.
+
+**Get the record:** Console → Actor → **Runs** → open the most recent successful run → **Storage** → **Default dataset** → switch the view to **JSON** → copy the first item whose `severity` is not `info`.
+
+If the dataset has no risk row, run once with `expiryWarningDays` set to `70`, then repeat.
+
+**Validate before pasting:**
+
+```bash
+pbpaste | python3 -m json.tool > /dev/null && echo VALID
+```
+
+**Paste this shape** (a real record captured on 2026-10-29):
 
 ```json
 {
-  "host": "addons.mozilla.org",
+  "host": "ai-guide.future.mozilla.org",
   "rootDomain": "mozilla.org",
   "severity": "medium",
   "findings": [
     {
       "type": "certificate_expiring",
       "severity": "medium",
-      "detail": "Certificate expires in 60 days (2026-12-25T15:08:08+00:00)."
+      "detail": "Certificate expires in 30 days (2026-11-28T11:33:41+00:00)."
     }
   ],
   "findingTypes": ["certificate_expiring"],
-  "cnameChain": [],
+  "cnameChain": ["ai-guide.future.netlifyglobalcdn.com"],
   "thirdPartyService": null,
-  "resolvedIps": ["151.101.1.91"],
+  "resolvedIps": ["3.33.186.135", "15.197.167.90"],
   "httpStatus": null,
   "tlsValid": true,
   "certIssuer": "Let's Encrypt",
-  "certExpiresAt": "2026-12-25T15:08:08+00:00",
-  "certDaysLeft": 60,
-  "checkedAt": "2026-10-26T14:38:17.866218+00:00"
+  "certExpiresAt": "2026-11-28T11:33:41+00:00",
+  "certDaysLeft": 30,
+  "checkedAt": "2026-10-29T09:09:06.244339+00:00"
 }
 ```
+
+**If the editor rejects it,** it may expect an array - wrap the object in `[ ]`. **Then click Save.** An unsaved section still counts as incomplete and keeps *Publish on Store* disabled.
 
 ### 3.3 Output schema
 
