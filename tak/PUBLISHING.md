@@ -115,9 +115,13 @@ The Publishing tab links to `apify/actor-readme-generator`, a third-party Actor 
 
 Skip it for this Actor. The template assumes a scraping tool, while this is a security audit product, and the README in this repo already covers the sections the Store scores: value proposition, detection rules, pricing, input table, output sample, integrations, MCP usage and limits. If you want a second opinion, paste the generated draft into a scratch file and cherry-pick ideas - never overwrite `README.md` with it.
 
-### 3.2 Sample output
+### 3.2 Sample output (may not exist in your Console)
 
-This is the most persuasive field on the page: it is what a buyer sees instead of a screenshot.
+Apify's docs list a **Sample output** section, but not every Console build renders one - in some builds it is folded into the Output schema area, and in others the Store preview is generated from the dataset schema plus your latest successful run.
+
+**It is not a publish gate.** Publishing requires: Store T&C accepted, at least one successful run, a README, and input + output schemas. If you cannot find the section, skip it and publish; come back if the Store preview looks empty.
+
+When the section **is** present, this is the most persuasive field on the page: it is what a buyer sees instead of a screenshot.
 
 **Get the record:** Console → Actor → **Runs** → open the most recent successful run → **Storage** → **Default dataset** → switch the view to **JSON** → copy the first item whose `severity` is not `info`.
 
@@ -215,7 +219,7 @@ A daily monitoring customer with 500 hosts spends roughly $1,230/month at the wo
 
 ## Phase 5 - publish and verify
 
-1. Publishing tab: all five sections green → **Publish on Store**.
+1. Publishing tab: every section that exists is marked complete → **Publish on Store**. Missing sections are optional; the hard requirements are T&C, one successful run, README, and input + output schemas.
 2. Verify as an anonymous visitor: open `https://apify.com/engraved_peanut/subdomain-takeover-cert-expiry-radar` in a **private window** (a logged-in session hides visibility problems).
 3. Verify via API:
 
@@ -317,7 +321,7 @@ Then Console: Actor → **Source** → Git integration → connect the new repo.
 - [ ] Categories left alone (auto-assigned after publish, verified afterwards)
 - [ ] `apify-default-dataset-item` **deleted**, `apify-actor-start` plus two custom events priced
 - [ ] Primary event = `host-audited`
-- [ ] Limited permissions selected, output schema present, sample output pasted
+- [ ] Limited permissions selected, output schema present, sample output pasted (if the section exists)
 - [ ] Private-window Store URL loads, API returns `isPublic: true`
 - [ ] Daily schedule + Slack webhook running on your own account
 
