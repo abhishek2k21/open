@@ -345,3 +345,72 @@ source .venv/bin/activate
 pip install -r requirements-dev.txt
 python -m pytest
 ```
+
+---
+
+## Appendix B - recovering from a conflicted working tree
+
+### Symptom
+
+```
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>' ...
+fatal: Exiting because of an unresolved conflict.
+```
+
+### Cause
+
+The working tree has **uncommitted edits to files that also changed upstream** (typically after copying files from another branch with `git checkout origin/<branch> -- <files>`), and `git pull` then tried to merge overlapping hunks. Git refuses to pull while unmerged paths exist.
+
+### Rule zero
+
+Never resolve this by hand-editing conflict markers in generated docs. The authoritative copy is on GitHub; the local tree has nothing worth keeping unless you wrote code after the last commit.
+
+### Recovery (safe, keeps a backup)
+
+```bash
+cd ~/Desktop/Work/Apify/open
+
+git status --short                 # expect UU / AA / DU entries
+cat .git/MERGE_HEAD 2>/dev/null    # non-empty means a merge is in progress
+
+git stash push -u -m "pre-reset backup"   # keep whatever is here, just in case
+git merge --abort 2>/dev/null || git rebase --abort 2>/dev/null || git cherry-pick --abort 2>/dev/null
+
+git fetch origin
+git switch cline/1ch18a82
+git reset --hard origin/cline/1ch18a82
+
+git status                        # must print: nothing to commit, working tree clean
+git log --oneline -1              # must equal: git rev-parse origin/cline/1ch18a82
+```
+
+`git stash push -u` keeps the discarded state under `git stash list` for a week or more. If you are certain nothing was lost, drop it with `git stash drop`.
+
+### Verify the tree is actually current
+
+```bash
+cd tak
+grep -c "3.1b The" PUBLISHING.md      # 1
+grep -c "What counts as a subdomain takeover" README.md   # 1
+make test                             # 30 passed
+make validate                         # 3 schema successes
+```
+
+### Nuclear option (fastest, still safe)
+
+Because GitHub is the source of truth and there is no local-only work:
+
+```bash
+cd ~/Desktop/Work/Apify
+mv open open.backup.$(date +%s)
+git clone https://github.com/abhishek2k21/open.git
+cd open && git switch cline/1ch18a82
+cd tak && make setup && make test
+```
+
+The old directory stays as a backup; delete it once `apify push` succeeds.
+
+### Prevention
+
+Pick one workflow and stay in it: either work on the branch and `git pull` normally, or copy files with `git checkout origin/<branch> -- <files>` and **never pull** into that tree afterwards. Mixing the two is what creates these conflicts.
