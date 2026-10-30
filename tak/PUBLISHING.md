@@ -468,3 +468,33 @@ The search at `console.apify.com/store-search` is **personalised to your account
 - Week 1-2: index and category assignment. Expect page 2-3 for a competitive query.
 - Week 3-6: with 3+ reviews and steady runs, page 1 becomes reachable.
 - Months 2-3: rank is sticky once ratings exist. Competitors with 100+ users and 5.0 ratings will still outrank you on broad queries - win on the specific ones ("dangling CNAME", "certificate expiry monitoring") where they have weaker coverage.
+
+---
+
+## Phase 11 - Pricing the risk event without scaring buyers
+
+Console shows `$120.00 / 1,000` for `risk-finding`. That is simply `$0.12 x 1000` - the unit Apify uses so events can be compared across Actors. The charge is **per finding**, not per thousand.
+
+### The trap in the current structure
+
+`risk-finding` fires for `medium`, `high` and `critical`. `medium` is the common case: any certificate expiring inside `expiryWarningDays`. On a 500-host domain with a 70-day window, a large share of hosts are `medium`, which turns a routine scan into a large bill and reads as gouging:
+
+| Scenario | host-audited | risk-finding | Total |
+|---|---|---|---|
+| 500 hosts, 300 medium findings | $5.00 | $36.00 | **$41.00** |
+| 500 hosts, 3 critical findings | $5.00 | $0.36 | **$5.36** |
+
+### Three ways to fix it
+
+| Model | Events | 500 hosts / 300 medium | 500 hosts / 3 critical | Code change |
+|---|---|---|---|---|
+| **A - current** | `host-audited` 0.01, `risk-finding` 0.12 (medium+) | $41.00 | $5.36 | none |
+| **B - severity split, same prices** | `host-audited` 0.01, `risk-finding` 0.12 (**high/critical only**) | $5.00 | $5.36 | one condition in `src/main.py` + tests |
+| **C - three tiers** | `host-audited` 0.01, `warning-finding` 0.03 (medium), `critical-finding` 0.50 (high+) | $14.00 | $6.50 | new event name + code + tests |
+| **D - price only** | `host-audited` 0.01, `risk-finding` 0.05 | $20.00 | $5.15 | none (price decrease is immediate) |
+
+Recommendation: **C** if you will ship code this week, **B** if you will not. Both keep the expensive event attached to findings a buyer would call an emergency (takeover, expired or invalid certificate, dangling CNAME) and stop routine expiries from dominating the bill.
+
+### Timing rule that decides this
+
+A price *decrease*, an event removal or an event retitle applies **immediately**. A price increase, a new paid event or a pricing-model change normally needs a 14-day notice and is limited to once per month - **but the waiting period does not apply while the Actor has no paying users**. Right now you have zero paying users, so restructure today; in a month it costs two weeks of notice.
