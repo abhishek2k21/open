@@ -185,8 +185,8 @@ The wizard has three steps: **Actor pricing → Primary event → Review**.
 |---|---|---|---|
 | `apify-actor-start` (synthetic) | Actor start | `$0.005` (default) | Once per run; covers container start |
 | `apify-default-dataset-item` (synthetic) | Dataset item | **Delete this event** | Would double-charge: every saved record already fires `host-audited` |
-| `host-audited` (custom) | Host audited | `$0.010` | A discovered host resolves, answers a probe, and its record is written |
-| `risk-finding` (custom) | Verified risk finding | `$0.120` | The saved record has `medium`, `high` or `critical` severity |
+| `host-audited` (custom) | Host audit | `$0.010` | A discovered host resolves, answers a probe, and its record is written |
+| `risk-finding` (custom) | Risk finding | `$0.120` | The saved record has `medium`, `high` or `critical` severity |
 
 Descriptions to paste (they appear on the Actor page and drive the "Pricing transparency" score):
 
@@ -194,6 +194,8 @@ Descriptions to paste (they appear on the Actor page and drive the "Pricing tran
 - `risk-finding` - "The audited host has a confirmed medium, high or critical issue: takeover risk, expired or invalid certificate, or expiry inside your warning window."
 
 **Primary event:** `host-audited`. It is the event that best represents the product and is highlighted on the detail page.
+
+**Title wording matters for the price line.** Apify pluralises the event title by appending an `s`, so a title of *Host audited* renders as **"from $10.00 / 1,000 host auditeds"** on the Actor page. Use singular nouns that pluralise cleanly: *Host audit* -> "1,000 host audits", *Risk finding* -> "1,000 risk findings". Changing a title or description is a non-significant change and applies immediately.
 
 ### 4.2 Pricing decisions that matter
 
@@ -432,3 +434,37 @@ The old directory stays as a backup; delete it once `apify push` succeeds.
 ### Prevention
 
 Pick one workflow and stay in it: either work on the branch and `git pull` normally, or copy files with `git checkout origin/<branch> -- <files>` and **never pull** into that tree afterwards. Mixing the two is what creates these conflicts.
+
+---
+
+## Phase 10 - Why a new Actor is not #1 in Store search
+
+Ranking is the **Actor quality score**, recomputed several times a day and scored relative to other Actors. A listing published today has 0 ratings, 0 bookmarks and no run history, so it cannot outrank an established Actor on popularity. What you can control, in order of leverage:
+
+| Lever | Weight in the score | What to do this month |
+|---|---|---|
+| Ratings and reviews | Feedback and community - heavy | Get 3-5 real users to run it and review it. A 0.0 (0) rating is the biggest single gap versus competitors sitting at 5.0 |
+| Bookmarks | Popularity | Ask every user who runs it to bookmark. Bookmarks are counted on the detail page |
+| Return usage | Popularity | Ship a Task preset ("Daily takeover watch") so people run it on a schedule instead of once |
+| Run success rate | Reliability | Keep the daily Store test green; it runs your `prefill` input every day |
+| Title relevance | Ease of use / congruency | Keep the exact search phrase in the title ("Subdomain Takeover") and in the first README sentence |
+| Pricing transparency | Pricing transparency | Event titles must read cleanly in the "from $X / 1,000 ..." line |
+| Limited permissions | Trustworthiness | Confirm the radio is on Limited |
+| Freshness | Popularity / history | Push a version every month; "Last modified" is displayed |
+
+### Do not diagnose ranking from Console search
+
+The search at `console.apify.com/store-search` is **personalised to your account** and includes your own private and unpublished Actors. It is not the public ranking. Always check `https://apify.com/store?search=Subdomain+Takeover` in a private window, or through the MCP `search-actors` tool.
+
+### Listing defects to fix before blaming ranking
+
+1. **Price line grammar** - "from $10.00 / 1,000 host auditeds" is a defect visible to every buyer. Retitle the event `Host audit` (non-significant change, applies immediately).
+2. **Empty categories** - if the Categories block on the public page renders no chips, the auto-assignment has not happened yet or failed. Wait 24-48 h, then use the feedback link; the block is not editable.
+3. **No screenshot or video** - nothing in the ranking formula, but it changes click-through and therefore users. A single annotated screenshot of the dataset table in the README lifts conversion.
+4. **Rating 0.0 (0)** - the fastest fix is five real users, not five fake reviews. Apify moderates reviews.
+
+### Realistic expectations
+
+- Week 1-2: index and category assignment. Expect page 2-3 for a competitive query.
+- Week 3-6: with 3+ reviews and steady runs, page 1 becomes reachable.
+- Months 2-3: rank is sticky once ratings exist. Competitors with 100+ users and 5.0 ratings will still outrank you on broad queries - win on the specific ones ("dangling CNAME", "certificate expiry monitoring") where they have weaker coverage.

@@ -1,6 +1,6 @@
 # Subdomain Takeover & Certificate Expiry Radar
 
-Live attack-surface audit for security, DevOps and MSP teams. Give it root domains; it discovers every subdomain from public Certificate Transparency logs, resolves DNS over HTTPS, probes TLS and flags the issues that cause real outages and breaches:
+Subdomain takeover scanner and certificate expiry monitor for security, DevOps and MSP teams. Give it root domains; it discovers every subdomain from public Certificate Transparency logs, resolves DNS over HTTPS, probes TLS and flags the issues that cause real outages and breaches:
 
 - **Subdomain takeover**: CNAME pointing at an unclaimed GitHub Pages, Heroku, S3, Azure, Shopify, Netlify and similar resource, confirmed by the provider's "unclaimed" page.
 - **Dangling CNAME**: the CNAME target no longer exists in DNS (NXDOMAIN).
